@@ -49,6 +49,10 @@ public class StateInputPair {
 			return false;
 		return true;
 	}
+	@Override
+	public String toString() {
+		return "StateInputPair [state=" + state + ", input=" + input + "]";
+	}
 	
 	
 

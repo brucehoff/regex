@@ -69,4 +69,8 @@ public class NFA {
 		}
 		return result;
 	}
+	
+	public String toString() {
+		return nfa.toString();
+	}
 }
