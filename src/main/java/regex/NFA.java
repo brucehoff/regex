@@ -50,7 +50,7 @@ public class NFA {
 				StringPositionAndTransitions spt = backtrackStack.pop();
 				i = spt.getStringPosition();
 				transitions = spt.getTransitions();
-				System.out.println("Backtracking to position "+i+" in "+s+". We have "+transitions.size()+" more rule(s) to try.");
+				// System.out.println("Backtracking to position "+i+" in "+s+". We have "+transitions.size()+" more rule(s) to try.");
 			}
 			state=transitions.get(0);
 			if (transitions.size()>1) {
