@@ -4,12 +4,17 @@ import static regex.State.START_STATE;
 import static regex.State.TERMINAL_STATE;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class RegexParser {
 	
-	private static final Character star = '*';
-	private static final Character wildcard = '.';
+	private static final Character STAR = '*';
+	private static final Character PLUS = '+';
+	private static final Character QUESTION_MARK = '?';
+	private static final Character WILDCARD = '.';
+	private static final Character BACKSLASH = '\\';
 	private static final WildcardCharacterMatch WILDCARD_MATCH = new WildcardCharacterMatch();
+	private static final List<Character> ALL_CONTROLS = Arrays.asList(new Character[] {STAR, PLUS, QUESTION_MARK, WILDCARD});
 	
 	/**
 	 * Parse a regular expression String and return an NFA
@@ -22,16 +27,39 @@ public class RegexParser {
 		for (int i=0; i<re.length(); i++) {
 			Character c = re.charAt(i); // the current character
 			Character peek = i<re.length()-1 ? re.charAt(+1) : null;
-			State nextState = i<re.length()-1 ? new State(""+i) : TERMINAL_STATE;
-			if (peek!=null && peek.equals(star)) {
-				throw new RuntimeException("Not yet implemented.");
-			} else {
-				if (c.equals(wildcard)) {
-					nfa.addTransition(state, new MatchTransitionPair(WILDCARD_MATCH, new Transition(nextState)));
-				} else {
-					nfa.addTransition(state, new MatchTransitionPair(new LiteralCharacterMatch(c), new Transition(nextState)));
-				}
+			State nextState = null;
+			if (c.equals(BACKSLASH)) { // \
+				if (peek==null) throw new RuntimeException("Regex cannot end with '\\'.");
+				if (!ALL_CONTROLS.contains(peek)) throw new RuntimeException("`\\` must be followed by one of "+ALL_CONTROLS);
+				i++;
+				nextState = i<re.length()-1 ? new State(""+i) : TERMINAL_STATE;
+				CharacterMatch match = new LiteralCharacterMatch(peek);
+				
+			} else if (peek!=null && peek.equals(STAR)) { // *
+				i++;
+				nextState = i<re.length()-1 ? new State(""+i) : TERMINAL_STATE;
+				CharacterMatch match = c.equals(WILDCARD) ? WILDCARD_MATCH : new LiteralCharacterMatch(c);
+				nfa.addTransition(state, Arrays.asList(new MatchTransitionPair[] {
+						new MatchTransitionPair(match, new Transition(state)),
+						new MatchTransitionPair(match, new Transition(nextState, true)) // epsilon transition
+				}));
+			} else if (peek!=null && peek.equals(QUESTION_MARK)) { // ?
+				i++;
+				nextState = i<re.length()-1 ? new State(""+i) : TERMINAL_STATE;
+				CharacterMatch match = c.equals(WILDCARD) ? WILDCARD_MATCH : new LiteralCharacterMatch(c);
+				nfa.addTransition(state, Arrays.asList(new MatchTransitionPair[] {
+						new MatchTransitionPair(match, new Transition(nextState)),
+						new MatchTransitionPair(match, new Transition(nextState, true)) // epsilon transition
+				}));
+			} else if (peek!=null && peek.equals(PLUS)) { // +
+				throw new RuntimeException("Not yet impelemented");
+			} else { // no modifier character
+				nextState = i<re.length()-1 ? new State(""+i) : TERMINAL_STATE;
+				CharacterMatch match = c.equals(WILDCARD) ? WILDCARD_MATCH : new LiteralCharacterMatch(c);
+				nfa.addTransition(state, new MatchTransitionPair(match, new Transition(nextState)));
+
 			} 
+			if (nextState==null) throw new IllegalStateException();
 			state=nextState;
 		}
 		return nfa;
