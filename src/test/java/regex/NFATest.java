@@ -15,10 +15,10 @@ public class NFATest {
 		// regex = "abc"
 		NFA nfa = new NFA();
 		State s1 = new State("s1");
-		nfa.addTransition(START_STATE, 'a', s1);
+		nfa.addTransition(START_STATE, new MatchTransitionPair('a', new Transition(s1)));
 		State s2 = new State("s2");
-		nfa.addTransition(s1, 'b', s2);
-		nfa.addTransition(s2, 'c', TERMINAL_STATE);
+		nfa.addTransition(s1, new MatchTransitionPair('b', new Transition(s2)));
+		nfa.addTransition(s2, new MatchTransitionPair('c', new Transition(TERMINAL_STATE)));
 		
 		// matching case
 		nfa.parse("abc");
@@ -35,8 +35,9 @@ public class NFATest {
 		// regex = "a*ab"
 		NFA nfa = new NFA();
 		State s1 = new State("s1");
-		nfa.addTransition(START_STATE, 'a', Arrays.asList(new State[] {START_STATE, s1}));
-		nfa.addTransition(s1, 'b', TERMINAL_STATE);
+		nfa.addTransition(START_STATE, Arrays.asList(new MatchTransitionPair[] {
+				new MatchTransitionPair('a', new Transition(START_STATE)), new MatchTransitionPair('a', new Transition(s1))}));
+		nfa.addTransition(s1, new MatchTransitionPair('b', new Transition(TERMINAL_STATE)));
 		
 		// matching cases
 		nfa.parse("ab");
