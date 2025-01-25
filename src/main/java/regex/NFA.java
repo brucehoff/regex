@@ -52,7 +52,6 @@ public class NFA {
 		int i=0;
 		while (i<s.length() || !state.equals(TERMINAL_STATE)) {
 			characterStates[i] = state;
-			System.out.println("i="+i+" state="+state+" "+Arrays.asList(characterStates));
 			List<Transition> matchingTransitions = new ArrayList<Transition>();
 			// If we have characters to parse and are not in a terminal state,
 			// look up the next transition in the NFA.
@@ -76,7 +75,7 @@ public class NFA {
 				i = spt.getStringPosition();
 				matchingTransitions = spt.getTransitions();
 				state = spt.getState();
-				System.out.println("Backtracking to position "+i+" in "+s+". We have "+matchingTransitions.size()+" more rule(s) to try.");
+				// System.out.println("Backtracking to position "+i+" in "+s+". We have "+matchingTransitions.size()+" more rule(s) to try.");
 				characterStates[i]=state;
 			}
 			Transition transition=matchingTransitions.get(0);
@@ -104,7 +103,6 @@ public class NFA {
 		if (s.length()==0) {
 			start=0;
 		}
-		System.out.println(Arrays.asList(characterStates));
 		return new StartAndEnd(start, end);
 	}
 	

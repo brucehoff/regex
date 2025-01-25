@@ -1,6 +1,7 @@
 package regex;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -12,7 +13,7 @@ public class RegexParserTest {
 			StartAndEnd result = nfa.parse(input);	
 			assertEquals(new StartAndEnd(start, end), result);
 		} catch (InvalidRegularExpression ire) {
-			fail("Unexpected failure in regular expression.");
+			fail("Unexpected failure in regular expression: "+ire.getMessage());
 		} catch (NoRegularExpressionMatchException nreme) {
 			fail("Unexpected failure to parse.");			
 		}
@@ -27,8 +28,13 @@ public class RegexParserTest {
 		}
 	}
 	
-	public void badRegex(String regex) {
-		Assert.assertThrows(InvalidRegularExpression.class, () -> {RegexParser.parseRegex(regex);});
+	public void badRegex(String regex, int failurePosition) {
+		try {
+			RegexParser.parseRegex(regex);
+			fail("Expected failure.");
+		} catch (InvalidRegularExpression e) {
+			assertEquals(failurePosition, e.getPosition());
+		}
 	}
 	
 	@Test
@@ -99,8 +105,8 @@ public class RegexParserTest {
 		shouldPass("a\\?b", "a?b", 0, 3);
 		shouldPass("a\\+b", "a+b", 0, 3);
 		shouldPass("a\\\\b", "a\\b", 0, 3);
-		badRegex("a*?b");
-		badRegex("a+?b");
+		badRegex("a*?b", 2);
+		badRegex("a+?b", 2);
 		shouldPass(".?", "X", 0, 1);
 		shouldPass(".+", "X", 0, 1);
 		shouldPass(".*", "X", 0, 1);
@@ -111,7 +117,7 @@ public class RegexParserTest {
 		
 		shouldPass("abc", "abc", 0, 3);
 		noMatch("abc", "abd");
-		badRegex("a**b");
+		badRegex("a**b", 2);
 	}	
 	
 	@Test
@@ -119,7 +125,7 @@ public class RegexParserTest {
 		shouldPass("a*b*c*", "", 0, 0);
 		noMatch("a*b*c*c", "");
 		shouldPass("\\\\\\?\\+", "\\?+", 0, 3);
-		// shouldPass("\\+*", "++++++"); TODO
+		shouldPass("\\+*", "++++++", 0, 6);
 	}
 	
 
