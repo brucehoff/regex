@@ -30,6 +30,7 @@ public class NFA {
 		nfa.put(state, Arrays.asList(new MatchTransitionPair[] {transition}));
 	}
 	
+	
 	/**
 	 * Apply the NFA to an input string.
 	 * @param s the input string
@@ -43,9 +44,10 @@ public class NFA {
 			// If we have characters to parse and are not in a terminal state,
 			// look up the next transition in the NFA.
 			// Otherwise we'll just try to backtrack
-			if (i<s.length() && !state.equals(State.TERMINAL_STATE)) {
+			if (!state.equals(State.TERMINAL_STATE)) {
 				for (MatchTransitionPair mtp : nfa.get(state)) {
-					if (mtp.getMatch().match(s.charAt(i))) {
+					if ((i<s.length() && mtp.getMatch().match(s.charAt(i))) ||
+							(i>=s.length() && mtp.getTransition().isEpsilon() && mtp.getMatch() instanceof EndOfLineMatch)) {
 						matchingTransitions.add(mtp.getTransition());
 					}
 				}
@@ -59,7 +61,7 @@ public class NFA {
 				StringPositionAndTransitions spt = backtrackStack.pop();
 				i = spt.getStringPosition();
 				matchingTransitions = spt.getTransitions();
-				System.out.println("Backtracking to position "+i+" in "+s+". We have "+matchingTransitions.size()+" more rule(s) to try.");
+				// System.out.println("Backtracking to position "+i+" in "+s+". We have "+matchingTransitions.size()+" more rule(s) to try.");
 			}
 			Transition transition=matchingTransitions.get(0);
 			if (matchingTransitions.size()>1) {

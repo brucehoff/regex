@@ -16,6 +16,10 @@ public class RegexParserTest {
 		Assert.assertThrows(RuntimeException.class, () -> {nfa.parse(input);});
 	}
 	
+	@Test
+	public void testEmptyString() {
+		shouldPass("", "");
+	}
 
 	@Test
 	public void testSimpleString() {
@@ -25,7 +29,7 @@ public class RegexParserTest {
 	
 	@Test
 	public void testWildCardMatch() {
-		// TODO shouldPass(".*", "");
+		shouldPass(".*", "");
 		shouldPass(".*", "a");
 		shouldPass(".*", "aa");
 		
@@ -36,7 +40,7 @@ public class RegexParserTest {
 	
 	@Test
 	public void testAsterisk() {
-		// TODO shouldPass("a*", "");
+		shouldPass("a*", "");
 
 		shouldPass("a*", "a");
 		shouldPass("a*", "aa");
@@ -48,7 +52,7 @@ public class RegexParserTest {
 	
 	@Test
 	public void testQuestionMark() {
-		// TODO shouldPass("a?", "");
+		shouldPass("a?", "");
 		shouldPass("a?", "a");
 		shouldPass("aab?cc", "aacc");
 		shouldPass("aab?cc", "aabcc");
@@ -56,7 +60,7 @@ public class RegexParserTest {
 
 	@Test
 	public void testPlus() {
-		// TODO shouldFail("a+", "");
+		shouldFail("a+", "");
 		shouldPass("a+", "a");
 		shouldPass("a+", "aa");
 		
@@ -64,16 +68,36 @@ public class RegexParserTest {
 		shouldPass("a+aab", "aaab");
 		shouldPass("a+aab", "aaaab");
 	}
-	
+
+	// cases from problem statement
 	@Test
 	public void testBasicCases() {
-		fail("TODO");
-	}
+		shouldPass("a\\.b", "a.b");
+		shouldPass("a\\*b", "a*b");
+		shouldPass("a\\?b", "a?b");
+		shouldPass("a\\+b", "a+b");
+		shouldPass("a\\\\b", "a\\b");
+		shouldFail("a*?b", "aab"); // TODO check that failure is from illegal regex
+		shouldFail("a+?b", "aab"); // TODO check that failure is from illegal regex
+		shouldPass(".?", "X");
+		shouldPass(".+", "X");
+		shouldPass(".*", "X");
+		
+		shouldFail("a", "abc"); // TODO match as a substring
+		shouldFail("b", "abc"); // TODO match as a substring
+		shouldFail("c", "abc"); // TODO match as a substring
+		
+		shouldPass("abc", "abc");
+		shouldFail("abc", "abd");
+		shouldFail("a**b", "abc"); // TODO check that failure is from illegal regex
+	}	
 	
 	@Test
 	public void testTourDeForce() {
-		fail("TODO");
-		
+		shouldPass("a*b*c*", "");
+		shouldFail("a*b*c*c", "");
+		shouldPass("\\\\\\?\\+", "\\?+");
+		// shouldPass("\\+*", "++++++"); TODO
 	}
 	
 
