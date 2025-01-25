@@ -6,10 +6,11 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class RegexParserTest {
-	private void shouldPass(String regex, String input) {
+	private void shouldPass(String regex, String input, int start, int end) {
 		try {
 			NFA nfa = RegexParser.parseRegex(regex);
-			nfa.parse(input);	
+			StartAndEnd result = nfa.parse(input);	
+			assertEquals(new StartAndEnd(start, end), result);
 		} catch (InvalidRegularExpression ire) {
 			fail("Unexpected failure in regular expression.");
 		} catch (NoRegularExpressionMatchException nreme) {
@@ -32,92 +33,92 @@ public class RegexParserTest {
 	
 	@Test
 	public void testEmptyString() {
-		shouldPass("", "");
+		shouldPass("", "", 0, 0);
 	}
 	
 	@Test
 	public void testSimpleSubstring() {
 		// 'a' is found as a substring of 'aX' so this should pass
-		shouldPass("a", "aX");
-		shouldPass("a", "Xa");
+		shouldPass("a", "aX", 0, 1);
+		shouldPass("a", "Xa", 1, 2);
 	}
 
 	@Test
 	public void testSimpleString() {
-		shouldPass("abc", "abc");
+		shouldPass("abc", "abc", 0, 3);
 		noMatch("abc", "dbc");
 	}
 	
 	@Test
 	public void testWildCardMatch() {
-		shouldPass(".*", "");
-		shouldPass(".*", "a");
-		shouldPass(".*", "aa");
+		shouldPass(".*", "", 0, 0);
+		shouldPass(".*", "a", 0, 1);
+		shouldPass(".*", "aa", 0, 2);
 		
-		shouldPass(".*aab", "aab");
-		shouldPass(".*aab", "Xaab");
-		shouldPass(".*aab", "XYaab");
+		shouldPass(".*aab", "aab", 0, 3);
+		shouldPass(".*aab", "Xaab", 0, 4);
+		shouldPass(".*aab", "XYaab", 0, 5);
 	}
 	
 	@Test
 	public void testAsterisk() {
-		shouldPass("a*", "");
+		shouldPass("a*", "", 0, 0);
 
-		shouldPass("a*", "a");
-		shouldPass("a*", "aa");
+		shouldPass("a*", "a", 0, 1);
+		shouldPass("a*", "aa", 0, 2);
 		
-		shouldPass("a*aab", "aab");
-		shouldPass("a*aab", "aaab");
-		shouldPass("a*aab", "aaaab");
+		shouldPass("a*aab", "aab", 0, 3);
+		shouldPass("a*aab", "aaab", 0, 4);
+		shouldPass("a*aab", "aaaab", 0, 5);
 	}
 	
 	@Test
 	public void testQuestionMark() {
-		shouldPass("a?", "");
-		shouldPass("a?", "a");
-		shouldPass("aab?cc", "aacc");
-		shouldPass("aab?cc", "aabcc");
+		shouldPass("a?", "", 0, 0);
+		shouldPass("a?", "a", 0, 1);
+		shouldPass("aab?cc", "aacc", 0, 4);
+		shouldPass("aab?cc", "aabcc", 0, 5);
 	}
 
 	@Test
 	public void testPlus() {
 		noMatch("a+", "");
-		shouldPass("a+", "a");
-		shouldPass("a+", "aa");
+		shouldPass("a+", "a", 0, 1);
+		shouldPass("a+", "aa", 0, 2);
 		
 		noMatch("a+aab", "aab");
-		shouldPass("a+aab", "aaab");
-		shouldPass("a+aab", "aaaab");
+		shouldPass("a+aab", "aaab", 0, 4);
+		shouldPass("a+aab", "aaaab", 0, 5);
 	}
-
+	
 	// cases from problem statement
 	@Test
 	public void testBasicCases() {
-		shouldPass("a\\.b", "a.b");
-		shouldPass("a\\*b", "a*b");
-		shouldPass("a\\?b", "a?b");
-		shouldPass("a\\+b", "a+b");
-		shouldPass("a\\\\b", "a\\b");
+		shouldPass("a\\.b", "a.b", 0, 3);
+		shouldPass("a\\*b", "a*b", 0, 3);
+		shouldPass("a\\?b", "a?b", 0, 3);
+		shouldPass("a\\+b", "a+b", 0, 3);
+		shouldPass("a\\\\b", "a\\b", 0, 3);
 		badRegex("a*?b");
 		badRegex("a+?b");
-		shouldPass(".?", "X");
-		shouldPass(".+", "X");
-		shouldPass(".*", "X");
+		shouldPass(".?", "X", 0, 1);
+		shouldPass(".+", "X", 0, 1);
+		shouldPass(".*", "X", 0, 1);
 		
-		shouldPass("a", "abc");
-		shouldPass("b", "abc");
-		shouldPass("c", "abc");
+		shouldPass("a", "abc", 0, 1);
+		shouldPass("b", "abc", 1, 2);
+		shouldPass("c", "abc", 2, 3);
 		
-		shouldPass("abc", "abc");
+		shouldPass("abc", "abc", 0, 3);
 		noMatch("abc", "abd");
 		badRegex("a**b");
 	}	
 	
 	@Test
 	public void testTourDeForce() {
-		shouldPass("a*b*c*", "");
+		shouldPass("a*b*c*", "", 0, 0);
 		noMatch("a*b*c*c", "");
-		shouldPass("\\\\\\?\\+", "\\?+");
+		shouldPass("\\\\\\?\\+", "\\?+", 0, 3);
 		// shouldPass("\\+*", "++++++"); TODO
 	}
 	

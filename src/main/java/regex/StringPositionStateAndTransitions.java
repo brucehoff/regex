@@ -2,14 +2,21 @@ package regex;
 
 import java.util.List;
 
-public class StringPositionAndTransitions {
+public class StringPositionStateAndTransitions {
 	private int stringPosition;
+	private State state;
 	private List<Transition> transitions;
 	
-	public StringPositionAndTransitions(int stringPosition, List<Transition> transitions) {
-		super();
+	public StringPositionStateAndTransitions(int stringPosition, State state, List<Transition> transitions) {
+		this.state=state;
 		this.stringPosition = stringPosition;
 		this.transitions = transitions;
+	}
+	public State getState() {
+		return state;
+	}
+	public void setState(State state) {
+		this.state = state;
 	}
 	public int getStringPosition() {
 		return stringPosition;
@@ -28,6 +35,7 @@ public class StringPositionAndTransitions {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + ((state == null) ? 0 : state.hashCode());
 		result = prime * result + stringPosition;
 		result = prime * result + ((transitions == null) ? 0 : transitions.hashCode());
 		return result;
@@ -41,7 +49,12 @@ public class StringPositionAndTransitions {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		StringPositionAndTransitions other = (StringPositionAndTransitions) obj;
+		StringPositionStateAndTransitions other = (StringPositionStateAndTransitions) obj;
+		if (state == null) {
+			if (other.state != null)
+				return false;
+		} else if (!state.equals(other.state))
+			return false;
 		if (stringPosition != other.stringPosition)
 			return false;
 		if (transitions == null) {
@@ -54,7 +67,8 @@ public class StringPositionAndTransitions {
 	
 	@Override
 	public String toString() {
-		return "StringPositionAndTransitions [stringPosition=" + stringPosition + ", transitions=" + transitions + "]";
+		return "StringPositionStateAndTransitions [stringPosition=" + stringPosition + ", state=" + state
+				+ ", transitions=" + transitions + "]";
 	}
 
 
