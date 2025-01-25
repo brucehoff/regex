@@ -38,11 +38,16 @@ public class NFA {
 		State state = State.START_STATE;
 		Stack<StringPositionAndTransitions> backtrackStack = new Stack<StringPositionAndTransitions>();
 		int i=0;
-		while (i<s.length()) {
+		while (i<s.length() || !state.equals(State.TERMINAL_STATE)) {
 			List<Transition> matchingTransitions = new ArrayList<Transition>();
-			for (MatchTransitionPair mtp : nfa.get(state)) {
-				if (mtp.getMatch().match(s.charAt(i))) {
-					matchingTransitions.add(mtp.getTransition());
+			// If we have characters to parse and are not in a terminal state,
+			// look up the next transition in the NFA.
+			// Otherwise we'll just try to backtrack
+			if (i<s.length() && !state.equals(State.TERMINAL_STATE)) {
+				for (MatchTransitionPair mtp : nfa.get(state)) {
+					if (mtp.getMatch().match(s.charAt(i))) {
+						matchingTransitions.add(mtp.getTransition());
+					}
 				}
 			}
 			// matchingTransitions is the list of Transitions which are valid for the current input character
@@ -65,9 +70,6 @@ public class NFA {
 			if (!transition.isEpsilon()) {
 				i++;
 			}
-		}
-		if (!state.equals(State.TERMINAL_STATE)) {
-			throw new RuntimeException("Parser failed.");
 		}
 	}
 	

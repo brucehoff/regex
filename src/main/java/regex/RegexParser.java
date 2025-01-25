@@ -26,7 +26,7 @@ public class RegexParser {
 		State state = START_STATE;
 		for (int i=0; i<re.length(); i++) {
 			Character c = re.charAt(i); // the current character
-			Character peek = i<re.length()-1 ? re.charAt(+1) : null;
+			Character peek = i<re.length()-1 ? re.charAt(i+1) : null;
 			State nextState = null;
 			if (c.equals(BACKSLASH)) { // \
 				if (peek==null) throw new RuntimeException("Regex cannot end with '\\'.");
@@ -34,14 +34,16 @@ public class RegexParser {
 				i++;
 				nextState = i<re.length()-1 ? new State(""+i) : TERMINAL_STATE;
 				CharacterMatch match = new LiteralCharacterMatch(peek);
-				
+				nfa.addTransition(state, new MatchTransitionPair(match, new Transition(nextState)));
 			} else if (peek!=null && peek.equals(STAR)) { // *
 				i++;
 				nextState = i<re.length()-1 ? new State(""+i) : TERMINAL_STATE;
 				CharacterMatch match = c.equals(WILDCARD) ? WILDCARD_MATCH : new LiteralCharacterMatch(c);
 				nfa.addTransition(state, Arrays.asList(new MatchTransitionPair[] {
 						new MatchTransitionPair(match, new Transition(state)),
-						new MatchTransitionPair(match, new Transition(nextState, true)) // epsilon transition
+						new MatchTransitionPair(match, new Transition(nextState)),
+						// epsilon transition.  The rule matches anything
+						new MatchTransitionPair(WILDCARD_MATCH, new Transition(nextState, true))
 				}));
 			} else if (peek!=null && peek.equals(QUESTION_MARK)) { // ?
 				i++;
@@ -49,7 +51,8 @@ public class RegexParser {
 				CharacterMatch match = c.equals(WILDCARD) ? WILDCARD_MATCH : new LiteralCharacterMatch(c);
 				nfa.addTransition(state, Arrays.asList(new MatchTransitionPair[] {
 						new MatchTransitionPair(match, new Transition(nextState)),
-						new MatchTransitionPair(match, new Transition(nextState, true)) // epsilon transition
+						// epsilon transition.  The rule matches anything
+						new MatchTransitionPair(WILDCARD_MATCH, new Transition(nextState, true))
 				}));
 			} else if (peek!=null && peek.equals(PLUS)) { // +
 				throw new RuntimeException("Not yet impelemented");
@@ -57,7 +60,6 @@ public class RegexParser {
 				nextState = i<re.length()-1 ? new State(""+i) : TERMINAL_STATE;
 				CharacterMatch match = c.equals(WILDCARD) ? WILDCARD_MATCH : new LiteralCharacterMatch(c);
 				nfa.addTransition(state, new MatchTransitionPair(match, new Transition(nextState)));
-
 			} 
 			if (nextState==null) throw new IllegalStateException();
 			state=nextState;
