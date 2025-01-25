@@ -35,7 +35,7 @@ public class NFA {
 	 * Apply the NFA to an input string.
 	 * @param s the input string
 	 */
-	public void parse(String s) {
+	public void parse(String s) throws NoRegularExpressionMatchException {
 		State state = State.START_STATE;
 		Stack<StringPositionAndTransitions> backtrackStack = new Stack<StringPositionAndTransitions>();
 		int i=0;
@@ -56,7 +56,7 @@ public class NFA {
 			if (matchingTransitions.isEmpty()) {
 				//  No matching transitions.  Can we backtrack?
 				if (backtrackStack.empty()) {
-					throw new RuntimeException("Parser failed at character "+i);
+					throw new NoRegularExpressionMatchException("Parser failed at character "+i);
 				}
 				StringPositionAndTransitions spt = backtrackStack.pop();
 				i = spt.getStringPosition();

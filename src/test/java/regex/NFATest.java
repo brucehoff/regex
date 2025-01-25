@@ -11,7 +11,7 @@ import org.junit.Test;
 public class NFATest {
 
 	@Test
-	public void testNFAwithSimpleString() {
+	public void testNFAwithSimpleString() throws Exception {
 		// regex = "abc"
 		NFA nfa = new NFA();
 		State s1 = new State("s1");
@@ -31,7 +31,7 @@ public class NFATest {
 	}
 	
 	@Test
-	public void testNFAWithBacktracking() {
+	public void testNFAWithBacktracking() throws Exception {
 		// regex = "a*ab"
 		NFA nfa = new NFA();
 		State s1 = new State("s1");

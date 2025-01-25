@@ -7,13 +7,27 @@ import org.junit.Test;
 
 public class RegexParserTest {
 	private void shouldPass(String regex, String input) {
-		NFA nfa = RegexParser.parseRegex(regex);
-		nfa.parse(input);	
+		try {
+			NFA nfa = RegexParser.parseRegex(regex);
+			nfa.parse(input);	
+		} catch (InvalidRegularExpression ire) {
+			fail("Unexpected failure in regular expression.");
+		} catch (NoRegularExpressionMatchException nreme) {
+			fail("Unexpected failure to parse.");			
+		}
 	}
 	
-	public void shouldFail(String regex, String input) {
-		NFA nfa = RegexParser.parseRegex(regex);
-		Assert.assertThrows(RuntimeException.class, () -> {nfa.parse(input);});
+	public void noMatch(String regex, String input) {
+		try {
+			NFA nfa = RegexParser.parseRegex(regex);
+			Assert.assertThrows(NoRegularExpressionMatchException.class, () -> {nfa.parse(input);});
+		} catch (InvalidRegularExpression e) {
+			fail("Unexpected failure in regular expression.");
+		}
+	}
+	
+	public void badRegex(String regex) {
+		Assert.assertThrows(InvalidRegularExpression.class, () -> {RegexParser.parseRegex(regex);});
 	}
 	
 	@Test
@@ -24,7 +38,7 @@ public class RegexParserTest {
 	@Test
 	public void testSimpleString() {
 		shouldPass("abc", "abc");
-		shouldFail("abc", "dbc");
+		noMatch("abc", "dbc");
 	}
 	
 	@Test
@@ -60,11 +74,11 @@ public class RegexParserTest {
 
 	@Test
 	public void testPlus() {
-		shouldFail("a+", "");
+		noMatch("a+", "");
 		shouldPass("a+", "a");
 		shouldPass("a+", "aa");
 		
-		shouldFail("a+aab", "aab");
+		noMatch("a+aab", "aab");
 		shouldPass("a+aab", "aaab");
 		shouldPass("a+aab", "aaaab");
 	}
@@ -77,25 +91,25 @@ public class RegexParserTest {
 		shouldPass("a\\?b", "a?b");
 		shouldPass("a\\+b", "a+b");
 		shouldPass("a\\\\b", "a\\b");
-		shouldFail("a*?b", "aab"); // TODO check that failure is from illegal regex
-		shouldFail("a+?b", "aab"); // TODO check that failure is from illegal regex
+		badRegex("a*?b");
+		badRegex("a+?b");
 		shouldPass(".?", "X");
 		shouldPass(".+", "X");
 		shouldPass(".*", "X");
 		
-		shouldFail("a", "abc"); // TODO match as a substring
-		shouldFail("b", "abc"); // TODO match as a substring
-		shouldFail("c", "abc"); // TODO match as a substring
+		noMatch("a", "abc"); // TODO match as a substring
+		noMatch("b", "abc"); // TODO match as a substring
+		noMatch("c", "abc"); // TODO match as a substring
 		
 		shouldPass("abc", "abc");
-		shouldFail("abc", "abd");
-		shouldFail("a**b", "abc"); // TODO check that failure is from illegal regex
+		noMatch("abc", "abd");
+		badRegex("a**b");
 	}	
 	
 	@Test
 	public void testTourDeForce() {
 		shouldPass("a*b*c*", "");
-		shouldFail("a*b*c*c", "");
+		noMatch("a*b*c*c", "");
 		shouldPass("\\\\\\?\\+", "\\?+");
 		// shouldPass("\\+*", "++++++"); TODO
 	}
