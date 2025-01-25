@@ -1,14 +1,6 @@
 package regex;
 
 public class State {
-	private static final String START_STATE_NAME = "START";
-	
-	public static final State START_STATE = new State(START_STATE_NAME);
-	
-	private static final String TERMINAL_STATE_NAME = "END";
-	
-	public static final State TERMINAL_STATE = new State(TERMINAL_STATE_NAME);
-	
 	private String state;
 
 	public State(String state) {

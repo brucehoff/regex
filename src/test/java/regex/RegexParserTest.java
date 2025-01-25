@@ -34,6 +34,13 @@ public class RegexParserTest {
 	public void testEmptyString() {
 		shouldPass("", "");
 	}
+	
+	@Test
+	public void testSimpleSubstring() {
+		// 'a' is found as a substring of 'aX' so this should pass
+		shouldPass("a", "aX");
+		shouldPass("a", "Xa");
+	}
 
 	@Test
 	public void testSimpleString() {
@@ -97,9 +104,9 @@ public class RegexParserTest {
 		shouldPass(".+", "X");
 		shouldPass(".*", "X");
 		
-		noMatch("a", "abc"); // TODO match as a substring
-		noMatch("b", "abc"); // TODO match as a substring
-		noMatch("c", "abc"); // TODO match as a substring
+		shouldPass("a", "abc");
+		shouldPass("b", "abc");
+		shouldPass("c", "abc");
 		
 		shouldPass("abc", "abc");
 		noMatch("abc", "abd");

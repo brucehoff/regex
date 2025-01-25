@@ -8,6 +8,14 @@ import java.util.Map;
 import java.util.Stack;
 
 public class NFA {
+	public static final State START_STATE = new State("START");
+	
+	public static final State TERMINAL_STATE = new State("END");
+	
+	public static final State START_OF_PATTERN = new State("START_OF_PATTERN");
+	
+	public static final State END_OF_PATTERN = new State("END_OF_PATTERN");
+	
 	
 	/*
 	 * nfa maps a state to the list of possible transitions
@@ -36,15 +44,15 @@ public class NFA {
 	 * @param s the input string
 	 */
 	public void parse(String s) throws NoRegularExpressionMatchException {
-		State state = State.START_STATE;
+		State state = START_STATE;
 		Stack<StringPositionAndTransitions> backtrackStack = new Stack<StringPositionAndTransitions>();
 		int i=0;
-		while (i<s.length() || !state.equals(State.TERMINAL_STATE)) {
+		while (i<s.length() || !state.equals(TERMINAL_STATE)) {
 			List<Transition> matchingTransitions = new ArrayList<Transition>();
 			// If we have characters to parse and are not in a terminal state,
 			// look up the next transition in the NFA.
 			// Otherwise we'll just try to backtrack
-			if (!state.equals(State.TERMINAL_STATE)) {
+			if (!state.equals(TERMINAL_STATE)) {
 				for (MatchTransitionPair mtp : nfa.get(state)) {
 					if ((i<s.length() && mtp.getMatch().match(s.charAt(i))) ||
 							(i>=s.length() && mtp.getTransition().isEpsilon() && mtp.getMatch() instanceof EndOfLineMatch)) {

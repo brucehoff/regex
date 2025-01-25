@@ -1,7 +1,7 @@
 package regex;
 
-import static regex.State.START_STATE;
-import static regex.State.TERMINAL_STATE;
+import static regex.NFA.START_STATE;
+import static regex.NFA.TERMINAL_STATE;
 
 import java.util.Arrays;
 
@@ -24,10 +24,10 @@ public class NFATest {
 		nfa.parse("abc");
 		
 		// not matching case
-		Assert.assertThrows(RuntimeException.class, () -> {nfa.parse("abd");});
+		Assert.assertThrows(NoRegularExpressionMatchException.class, () -> {nfa.parse("abd");});
 		
 		// not matching case
-		Assert.assertThrows(RuntimeException.class, () -> {nfa.parse("dbc");});
+		Assert.assertThrows(NoRegularExpressionMatchException.class, () -> {nfa.parse("dbc");});
 	}
 	
 	@Test
@@ -44,7 +44,7 @@ public class NFATest {
 		nfa.parse("aab");
 		
 		// not matching cases
-		Assert.assertThrows(RuntimeException.class, () -> {nfa.parse("b");});
+		Assert.assertThrows(NoRegularExpressionMatchException.class, () -> {nfa.parse("b");});
 	}
 
 }

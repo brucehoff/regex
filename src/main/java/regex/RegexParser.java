@@ -1,7 +1,7 @@
 package regex;
 
-import static regex.State.START_STATE;
-import static regex.State.TERMINAL_STATE;
+import static regex.NFA.START_STATE;
+import static regex.NFA.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +18,17 @@ public class RegexParser {
 	private static final List<Character> ALL_CONTROLS = Arrays.asList(new Character[] {STAR, PLUS, QUESTION_MARK, WILDCARD, BACKSLASH});
 	private static final List<Character> ILLEGAL_START = Arrays.asList(new Character[] {STAR, PLUS, QUESTION_MARK});
 	
+	
+	private static final List<MatchTransitionPair> createNonGreedyWildcardTransitionList(State currentState, State nextState) {
+		return Arrays.asList(new MatchTransitionPair[] {
+				// epsilon transition.  The rule matches anything
+				new MatchTransitionPair(WILDCARD_MATCH, new Transition(nextState, true)),
+				new MatchTransitionPair(WILDCARD_MATCH, new Transition(currentState)),
+				// match end of line. (Alternative is to add a special char' on the end of the input string
+				new MatchTransitionPair(END_OF_LINE_MATCH, new Transition(nextState, true))
+		});
+	}
+	
 	/**
 	 * Parse a regular expression String and return an NFA
 	 * @param re
@@ -25,12 +36,16 @@ public class RegexParser {
 	 */
 	public static NFA parseRegex(String re) throws InvalidRegularExpression {
 		NFA nfa = new NFA();
-		State state = START_STATE;
 		if (re.length()==0) { // special case: no rules
+			// TODO I think I can get rid of this
 			nfa.addTransition(START_STATE, new MatchTransitionPair(END_OF_LINE_MATCH, new Transition(TERMINAL_STATE, true)));
 			return nfa;
 		}
-		int nextStateId=0;
+		// we start by adding 'non-greedy' wildcards (like '.*') to the beginning and end of the patterns
+		nfa.addTransition(START_STATE, createNonGreedyWildcardTransitionList(START_STATE, START_OF_PATTERN));
+		nfa.addTransition(END_OF_PATTERN, createNonGreedyWildcardTransitionList(END_OF_PATTERN, TERMINAL_STATE));
+		State state = START_OF_PATTERN;
+		int nextStateId=0; // a convenience generator for unique state ids
 		for (int i=0; i<re.length(); i++) {
 			Character c = re.charAt(i); // the current character
 			Character peek = i<re.length()-1 ? re.charAt(i+1) : null;
@@ -41,16 +56,15 @@ public class RegexParser {
 				if (peek==null) throw new InvalidRegularExpression("Regex cannot end with '\\'.");
 				if (!ALL_CONTROLS.contains(peek)) throw new InvalidRegularExpression("`\\` must be followed by one of "+ALL_CONTROLS);
 				i++;
-				nextState = i<re.length()-1 ? new State(""+(nextStateId++)) : TERMINAL_STATE;
+				nextState = i<re.length()-1 ? new State(""+(nextStateId++)) : END_OF_PATTERN;
 				CharacterMatch match = new LiteralCharacterMatch(peek);
 				nfa.addTransition(state, new MatchTransitionPair(match, new Transition(nextState)));
 			} else if (peek!=null && peek.equals(STAR)) { // *
 				i++;
-				nextState = i<re.length()-1 ? new State(""+(nextStateId++)) : TERMINAL_STATE;
+				nextState = i<re.length()-1 ? new State(""+(nextStateId++)) : END_OF_PATTERN;
 				CharacterMatch match = c.equals(WILDCARD) ? WILDCARD_MATCH : new LiteralCharacterMatch(c);
 				nfa.addTransition(state, Arrays.asList(new MatchTransitionPair[] {
 						new MatchTransitionPair(match, new Transition(state)),
-						new MatchTransitionPair(match, new Transition(nextState)),
 						// epsilon transition.  The rule matches anything
 						new MatchTransitionPair(WILDCARD_MATCH, new Transition(nextState, true)),
 						// match end of line. (Alternative is to add a special char' on the end of the input string
@@ -58,7 +72,7 @@ public class RegexParser {
 				}));
 			} else if (peek!=null && peek.equals(QUESTION_MARK)) { // ?
 				i++;
-				nextState = i<re.length()-1 ? new State(""+(nextStateId++)) : TERMINAL_STATE;
+				nextState = i<re.length()-1 ? new State(""+(nextStateId++)) : END_OF_PATTERN;
 				CharacterMatch match = c.equals(WILDCARD) ? WILDCARD_MATCH : new LiteralCharacterMatch(c);
 				nfa.addTransition(state, Arrays.asList(new MatchTransitionPair[] {
 						new MatchTransitionPair(match, new Transition(nextState)),
@@ -69,14 +83,14 @@ public class RegexParser {
 				}));
 			} else if (peek!=null && peek.equals(PLUS)) { // +
 				i++;
-				nextState = i<re.length()-1 ? new State(""+(nextStateId++)) : TERMINAL_STATE;
+				nextState = i<re.length()-1 ? new State(""+(nextStateId++)) : END_OF_PATTERN;
 				CharacterMatch match = c.equals(WILDCARD) ? WILDCARD_MATCH : new LiteralCharacterMatch(c);
 				nfa.addTransition(state, Arrays.asList(new MatchTransitionPair[] {
 						new MatchTransitionPair(match, new Transition(state)),
 						new MatchTransitionPair(match, new Transition(nextState))
 				}));
 			} else { // no modifier character
-				nextState = i<re.length()-1 ? new State(""+(nextStateId++)) : TERMINAL_STATE;
+				nextState = i<re.length()-1 ? new State(""+(nextStateId++)) : END_OF_PATTERN;
 				CharacterMatch match = c.equals(WILDCARD) ? WILDCARD_MATCH : new LiteralCharacterMatch(c);
 				nfa.addTransition(state, new MatchTransitionPair(match, new Transition(nextState)));
 			} 
